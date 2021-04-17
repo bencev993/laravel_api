@@ -16,7 +16,27 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return response(ProductResource::collection(Product::all()));
+        return response(ProductResource::collection(Product::paginate(20)));
+    }
+
+    public function search(Request $request)
+    {
+        if($request->q) {
+            $request = $this->validate($request, [
+                'q' => 'required|string|min:3|max:30'
+            ]);
+
+            $products = Product::query()
+            ->where('name', 'like', '%' . $request->q . '%')
+            ->orWhere('description', 'like', '%' . $request->q . '%')
+            ->orderBy('id', 'desc')->paginate(20);
+
+            if($products->count() > 0) {
+                return response()->json(['products' => $products], 200);
+            }
+        }
+
+        return response()->json([null], 500);
     }
 
     public function show($id)
@@ -24,7 +44,7 @@ class ProductController extends Controller
         $product = Product::find($id);
         $images = $product->images;
 
-        return response(['product' => $product, 'images' => $images], 200);
+        return response()->json(['product' => $product, 'images' => $images], 200);
     }
 
 }

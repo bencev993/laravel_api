@@ -131,6 +131,44 @@ class AdminController extends Controller
         return response()->json(['product' => $product], 200);
     }
 
+    public function activateProduct(Request $request)
+    {
+        if($request->id) {
+            $request = $this->validate($request, [
+                'id' => 'required|integer'
+            ]);
+
+            $product = Product::find($request['id']);
+            if($product->is_active == 0) {
+                $product->update(['is_active' => 1]);
+            } else {
+                $product->update(['is_active' => 0]);
+            }
+
+            return response()->json(['product' => $product], 200);
+        }
+
+        return response()->json([], 500);
+    }
+
+    public function deleteProduct(Request $request)
+    {
+        if($request->id) {
+            $request = $this->validate($request, [
+                'id' => 'required|integer'
+            ]);
+
+            $product = Product::find($request['id']);
+            if($product) {
+                $product->delete();
+            }
+
+            return response()->json(['product' => $product], 200);
+        }
+
+        return response()->json([], 500);
+    }
+
     public function storeCategory(StoreCategoryRequest $request)
     {
         try {

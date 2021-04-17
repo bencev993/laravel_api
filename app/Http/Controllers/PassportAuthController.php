@@ -10,55 +10,24 @@ class PassportAuthController extends Controller
 {
     use AuthenticatesUsers;
 
-    // protected function login(Request $request)
-    // {
-    //     $data = [
-    //         'email' => $request->email,
-    //         'password' => $request->password
-    //     ];
-
-    //     if (auth()->attempt($data)) {
-
-    //         if (auth()->user()->is_admin) {
-    //             $request->request->add([
-    //                 'scope' => 'admin-pages'
-    //             ]);
-    //         } else {
-    //             $request->request->add([
-    //                 'scope' => 'customer-pages'
-    //             ]);
-    //         }
-
-    //         $tokenRequest = Request::create(
-    //             '/oauth/token',
-    //             'post'
-    //         );
-
-    //     }
-
-    //     return Route::dispatch($tokenRequest);
-    // }
-
     public function register(Request $request)
     {
-        // $this->validate($request, [
-        //     'email' => 'required|email',
-        //     'password' => 'required|min:6',
-        // ]);
+        $this->validate($request, [
+            'email' => 'required|email',
+            'password' => 'required|min:6',
+        ]);
 
-        // $user = User::create([
-        //     'email' => $request->email,
-        //     'password' => bcrypt($request->password)
-        // ]);
+        $user = User::create([
+            'email' => $request->email,
+            'password' => bcrypt($request->password)
+        ]);
 
-        // $token = $user->createToken('AccessToken', ['customer-pages'])->accessToken;
+        $token = $user->createToken('AccessToken', ['customer'])->accessToken;
 
-        // return response()->json(['token' => $token], 200);
+        return response()->json(['token' => $token], 200);
     }
 
-    /**
-     * Login
-     */
+
     public function login(Request $request)
     {
 
@@ -71,12 +40,21 @@ class PassportAuthController extends Controller
             if(auth()->user()->is_admin) {
                 $token = auth()->user()->createToken('AccessToken', ['admin']);
             } else {
-                $token = auth()->user()->createToken('AccessToken', ['guest']);
+                $token = auth()->user()->createToken('AccessToken', ['customer']);
             }
+
+            $user = auth()->user();
 
             return response()->json([
                 'token' => $token->accessToken,
-                'scope' => $token->token->scopes[0]
+                'scope' => $token->token->scopes[0],
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'address' => $user->address,
+                'city' => $user->city,
+                'country' => $user->country,
+                'zip' => $user->zip,
             ], 200);
         } else {
             return response()->json(['error' => 'Unauthorized'], 401);
@@ -90,9 +68,6 @@ class PassportAuthController extends Controller
             'message' => 'Logged out successfully'
         ], 200);
     }
-
-
-
 
 
 }
