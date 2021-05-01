@@ -34,7 +34,7 @@ class AdminController extends Controller
             'name' => $request->name,
             'price' => $request->price,
             'stock' => $request->stock,
-            'category_id' => $request->category,
+            'category_id' => $request->category  ? $request->category : null,
             'description' => $request->description,
             'discount' => $request->discount
         ]);
@@ -125,7 +125,7 @@ class AdminController extends Controller
 
         } catch (Exception $e) {
             $error = $e->getMessage();
-            return response()->json(['error' => $error], 500);
+            return response()->json([null], 500);
         }
 
         return response()->json(['product' => $product], 200);
