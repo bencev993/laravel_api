@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\PaymentRequest;
+use App\Models\Order;
 use Stripe\Stripe;
 use Stripe\Charge;
 
@@ -23,7 +25,8 @@ class PaymentController extends Controller
             'address' => $request->address,
             'city' => $request->city,
             'zipcode' => $request->zip,
-            'country' => $request->country
+            'state' => $request->state,
+            'token' => $request->stripeToken
         ];
 
         try {
@@ -31,7 +34,7 @@ class PaymentController extends Controller
                 'amount' => $request->total * 100,
                 'currency' => 'usd',
                 'description' => 'Example charge',
-                'source' => $request->stripeToken,
+                'source' => $input['token']
             ]);
 
             $order = Order::create([
@@ -40,7 +43,7 @@ class PaymentController extends Controller
                 'address' => $input['address'],
                 'city' => $input['city'],
                 'zipcode' => $input['zipcode'],
-                'country' => $input['country'],
+                'state' => $input['state'],
                 'email' => $input['email'],
                 'phone' => $input['phone'],
                 'cart' => serialize($request->items),
@@ -48,6 +51,8 @@ class PaymentController extends Controller
             ]);
 
             !Auth::user() ? $order->save() : Auth::user()->orders()->save($order);
+
+            return response()->json(null, 200);
 
         } catch(Exception $e) {
             $error = $e->getMessage();

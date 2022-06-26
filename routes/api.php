@@ -32,6 +32,10 @@ Route::group(['prefix' => 'admin', 'middleware' => ['auth:api', 'admin', 'cors',
 
     Route::post('/create-category', [AdminController::class, 'storeCategory']);
     Route::post('/delete-category', [AdminController::class, 'destroyCategory']);
+
+    Route::get('/order/{id}', [AdminController::class, 'getOrder']);
+    Route::get('/orders', [AdminController::class, 'getOrders']);
+    Route::post('/update-order', [AdminController::class, 'updateOrderStatus']);
 });
 
 Route::group(['middleware' => 'cors'], function() {

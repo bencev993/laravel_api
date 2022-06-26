@@ -15,7 +15,7 @@ class Order extends Model
         'address',
         'city',
         'zipcode',
-        'country',
+        'state',
         'email',
         'phone',
         'cart',

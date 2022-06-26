@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Models\Product;
 use App\Models\Image;
 use App\Models\Category;
+use App\Models\Order;
+use App\Http\Resources\OrderResource;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Http\Requests\StoreCategoryRequest;
@@ -177,8 +179,7 @@ class AdminController extends Controller
                 'parent_id' => $request->parent_id
             ]);
         } catch (Exception $e) {
-            $error = $e->getMessage();
-            return response()->json(['error' => $error], 500);
+            return response()->json([], 500);
         }
 
         return response()->json(['category' => $category], 200);
@@ -206,15 +207,55 @@ class AdminController extends Controller
 
             return response()->json(['categories' => $categories], 200);
         } catch (Exception $e) {
-            $error = $e->getMessage();
-            return response()->json(['error' => $error], 500);
+            return response()->json([], 500);
         }
 
     }
 
     public function updateUser(UpdateUserRequest $request)
     {
-        User::where('is_admin', 1)->update(['password' => bcrypt($request->password)]);
-        return response()->json(null, 200);
+        try {
+            User::where('is_admin', 1)->update(['password' => bcrypt($request->password)]);
+            return response()->json(null, 200);
+        } catch(Exception $e) {
+            return response()->json([], 500);
+        }
+        
+    }
+
+    public function getOrder($id) {
+        $order = Order::find($id);
+        $cartItems = unserialize($order->cart);
+        return response()->json(['order' => $order, 'cartItems' => $cartItems], 200);
+    }
+
+    public function getOrders() {
+        $orders = OrderResource::collection(Order::paginate(20));
+
+        if($orders) {
+           return response($orders); 
+        }
+
+        return response()->json([], 500);
+    }
+
+    public function updateOrderStatus(Request $request) {
+        try {
+            $request = $this->validate($request, [
+                'id' => 'required|integer',
+                'status' => 'nullable|string|min:5|max:10'
+            ]);
+
+            if($request['status'] == null) {
+                Order::find($request['id'])->delete();
+            } else {
+                Order::where('id', $request['id'])->update(['status' => $request['status']]);
+            }
+
+            return response()->json(['Success'], 200);
+
+        } catch(Exception $e) {
+            return response()->json([], 500);
+        }
     }
 }

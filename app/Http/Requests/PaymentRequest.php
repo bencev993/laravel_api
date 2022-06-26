@@ -16,7 +16,7 @@ class PaymentRequest extends FormRequest
             'address' => 'required|min:5|max:30|string',
             'city' => 'required|min:3|max:30|string',
             'zip' => 'required|numeric|digits_between:1,5',
-            'country' => 'required|min:2|max:30|string',
+            'state' => 'required|min:2|max:30|string',
             'total' => 'required'
         ];
     }
